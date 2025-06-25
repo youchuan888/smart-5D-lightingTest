@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <!-- Open Graph Tags for preview -->
   <title>Smart 5D Lighting</title>
-  <!-- 🔗 Open Graph meta for LINE/FB sharing -->  
-  <meta property="og:title" content="a smart Top to down lighting with controllable 5 direction beam"/>
-  <meta property="og:description" content="This is a control page that suitable for fixtures with multi-directional or multi-angle projection requirements."/>
-  <meta property="og:image" content="lighting.jpg"/>
+  <meta property="og:title" content="a smart Top to down lighting with controllable 5 direction beam">
+  <meta property="og:description" content="This is a control page that suitable for fixtures with multi-directional or multi-angle projection requirements.">
+  <meta property="og:image" content="lighting.jpg">
+  <meta property="og:type" content="website">
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,7 +21,7 @@
       background-color: #f0f2f5;
     }
     h1 {
-      font-size: 24px;
+      font-size: 36px;
       margin-bottom: 20px;
     }
     .controller {
@@ -86,7 +89,7 @@
   </style>
 </head>
 <body>
-  <h1>Smar 5D tLighting</h1>
+  <h1>Smart 5D Lighting</h1>
 
   <div class="controller">
     <button style="grid-area: forward" onclick="sendCommand('Front', 1)">Front</button>
@@ -150,9 +153,7 @@
         const value = new Uint8Array([number]);
         await bleCharacteristic.writeValue(value);
         console.log(`📤 Sent command: ${label} → ${number}`);
- //       document.getElementById("actionDisplay").textContent = `Button: ${label}, Sent: ${number}`;
-        document.getElementById("actionDisplay").textContent = `Command: ${label}`;
-
+        document.getElementById("actionDisplay").textContent = `Button: ${label}, Sent: ${number}`;
       } catch (error) {
         console.error('❌ Error sending command:', error);
         document.getElementById("actionDisplay").textContent = `Error sending command: ${label}`;
@@ -160,8 +161,8 @@
     }
 
     function updateSliderValue(val) {
-      document.getElementById("sliderValue").textContent = `Dimming: ${val}`;
-      sendCommand(`Dimming`, parseInt(val) + 10);
+      document.getElementById("sliderValue").textContent = `Size: ${val}`;
+      sendCommand(`Size`, parseInt(val) + 10);
     }
   </script>
 </body>
