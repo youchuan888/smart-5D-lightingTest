@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart 5D Lighting</title>
+  <!-- 🔗 Open Graph meta for LINE/FB sharing -->  
+  <meta property="og:title" content="a smart Top to down lighting with controllable 5 direction beam"/>
+  <meta property="og:description" content="This is a control page that suitable for fixtures with multi-directional or multi-angle projection requirements."/>
+  <meta property="og:image" content="lighting.jpg"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-color: #f0f2f5;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .controller {
+      display: grid;
+      grid-template-areas:
+        ". forward ."
+        "left center right"
+        ". backward .";
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .controller button {
+      width: 70px;
+      height: 70px;
+      font-size: 14px;
+      border: none;
+      border-radius: 10px;
+      background-color: #007bff;
+      color: white;
+    }
+    .connect-btn, .status-display, .action-display {
+      width: 90%;
+      max-width: 400px;
+      margin: 10px 0;
+      padding: 15px;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 10px;
+    }
+    .connect-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+    .disconnect-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+    }
+    .status-display {
+      background-color: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+    }
+    .action-display {
+      background-color: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+    }
+    .slider-container {
+      width: 90%;
+      max-width: 400px;
+      margin: 10px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .slider-container input {
+      width: 100%;
+    }
+    .slider-value {
+      margin-top: 5px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Smar 5D tLighting</h1>
+
+  <div class="controller">
+    <button style="grid-area: forward" onclick="sendCommand('Front', 1)">Front</button>
+    <button style="grid-area: left" onclick="sendCommand('Left', 3)">Left</button>
+    <button style="grid-area: center" onclick="sendCommand('Center', 5)">Center</button>
+    <button style="grid-area: right" onclick="sendCommand('Right', 4)">Right</button>
+    <button style="grid-area: backward" onclick="sendCommand('Back', 2)">Back</button>
+  </div>
+
+  <div class="slider-container">
+    <input type="range" id="rangeSlider" min="1" max="20" value="20" oninput="updateSliderValue(this.value)" />
+    <div class="slider-value" id="sliderValue">Size: 10</div>
+  </div>
+
+  <button class="connect-btn" onclick="toggleConnection()">Connect / Disconnect</button>
+
+  <div class="status-display" id="statusDisplay">Not connected</div>
+  <div class="action-display" id="actionDisplay">No command sent yet</div>
+
+  <script>
+    const deviceName = 'Smart 5D Lighting';
+    const bleService = '73a058dd-9fbe-41e2-b110-abd419c18dd7';
+    const ledCharacteristicUUID = '73a058dd-9fbe-41e2-b110-abd419c18dd8';
+    const sensorCharacteristicUUID = '73a058dd-9fbe-41e2-b110-abd419c18dd9';
+
+    let bleDevice = null;
+    let bleCharacteristic = null;
+
+//--------------------------------------------------------------
+    async function toggleConnection() {
+      if (bleDevice && bleDevice.gatt.connected) {
+        bleDevice.gatt.disconnect();
+        document.getElementById("statusDisplay").textContent = "Disconnected";
+        return;
+      }
+      try {
+        bleDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ name: deviceName }],
+          optionalServices: [bleService]
+        });
+
+        const server = await bleDevice.gatt.connect();
+        const service = await server.getPrimaryService(bleService);
+        bleCharacteristic = await service.getCharacteristic(ledCharacteristicUUID);
+
+        document.getElementById("statusDisplay").textContent = `Connected to ${bleDevice.name}`;
+      } catch (error) {
+        console.error(error);
+        document.getElementById("statusDisplay").textContent = "Connection failed";
+      }
+    }
+//----------------------------------
+
+    async function sendCommand(label, number) {
+      if (!bleCharacteristic) {
+        alert("Please connect to BLE device first!");
+        return;
+      }
+
+      try {
+        const value = new Uint8Array([number]);
+        await bleCharacteristic.writeValue(value);
+        console.log(`📤 Sent command: ${label} → ${number}`);
+ //       document.getElementById("actionDisplay").textContent = `Button: ${label}, Sent: ${number}`;
+        document.getElementById("actionDisplay").textContent = `Command: ${label}`;
+
+      } catch (error) {
+        console.error('❌ Error sending command:', error);
+        document.getElementById("actionDisplay").textContent = `Error sending command: ${label}`;
+      }
+    }
+
+    function updateSliderValue(val) {
+      document.getElementById("sliderValue").textContent = `Dimming: ${val}`;
+      sendCommand(`Dimming`, parseInt(val) + 10);
+    }
+  </script>
+</body>
+</html>
